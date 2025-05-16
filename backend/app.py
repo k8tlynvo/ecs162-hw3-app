@@ -52,5 +52,9 @@ def logout():
     session.clear()
     return redirect('/')
 
+@app.route('/api/key')
+def get_key():
+    return jsonify({'apiKey': os.getenv('NYT_API_KEY')})
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)
