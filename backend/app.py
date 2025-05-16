@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session
+from flask import Flask, redirect, url_for, session, jsonify
 from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
