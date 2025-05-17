@@ -35,7 +35,7 @@ header {
 #logo {
   /* adjust the size of the logo */
   height: 110%;
-  max-width: 100%;
+  max-width: 65%;
 }
 
 #todaysDate {
@@ -103,6 +103,31 @@ h1 {
   /* adjust size and color of article descriptions*/
   color: var(--gray);
   font-size: 1rem;
+}
+
+/* Login Button Styles */
+.login-button {
+  position: absolute;
+  right: 2rem;
+  top: 0;
+  z-index: 10;
+}
+
+.login-button a {
+  display: inline-block;
+  background-color: #6e7f91;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.login-button a:hover {
+  background-color: #5a6a7e;
 }
 
 /* Tablet view: show two columns when screen width is between 768px and 1024px */
