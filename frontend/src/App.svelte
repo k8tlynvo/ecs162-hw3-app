@@ -2,7 +2,6 @@
   import { onMount, onDestroy } from 'svelte';
   import { fetchArticles } from './fetchArticles';
 
-  let apiKey: string = '';
   let articles: string | any[] = [];
   let query = 'davis/sacramento';
   let page = 0;
@@ -28,7 +27,7 @@
     if (loading) return;
     loading = true;
     try {
-      const newArticles = await fetchArticles(query, apiKey, page);
+      const newArticles = await fetchArticles(query, page);
       articles = [...articles, ...newArticles];
       page += 1;
     } catch (error) {
@@ -49,17 +48,10 @@
     updateLayout(); // get initial layout class
     window.addEventListener('resize', updateLayout);
     try {
-      const res = await fetch('/api/key');
-      const data = await res.json();
-      apiKey = data.apiKey;
-
-      if (apiKey) {
-        // fetch articles
-        await loadArticles();
-        window.addEventListener('scroll', handleScroll);
-      }
+      await loadArticles();
+      window.addEventListener('scroll', handleScroll);
     } catch (error) {
-      console.error('Failed to fetch API key:', error);
+      console.error('Failed to fetch articles:', error);
     }
   });
 
