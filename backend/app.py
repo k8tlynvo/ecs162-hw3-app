@@ -62,8 +62,6 @@ def get_articles():
     if not query:
         return jsonify({'error': 'Missing query parameter'}), 400
     
-    #     `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${encodeURIComponent(searchTerm)}&page=${page}&api-key=${apiKey}`
-
     nyt_url = 'https://api.nytimes.com/svc/search/v2/articlesearch.json'
     params = {
         'q': query,
@@ -78,8 +76,6 @@ def get_articles():
 
         articles = []
         for doc in data['response']['docs']:
-
-            print(doc)
             articles.append({
                 'headline': doc['headline']['main'],
                 'url': doc['web_url'],
