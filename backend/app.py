@@ -8,6 +8,7 @@ from bson.objectid import ObjectId
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
 client = MongoClient('mongodb://root:rootpassword@localhost:27017/mydatabase?authSource=admin')
 db = client["mydatabase"]
 articles_collection = db["articles"]
@@ -75,8 +76,8 @@ def get_articles():
     params = { "q": query, "page": page, "api-key": api_key }
 
     nyt_response = requests.get(nyt_url, params=params)
-    # print("NYT Response Status:", nyt_response.status_code)
-    # print("NYT Response Content:", nyt_response.text)
+    print("NYT Response Status:", nyt_response.status_code)
+    print("NYT Response Content:", nyt_response.text)
     if nyt_response.status_code != 200:
         return jsonify({'error': 'Failed to fetch NYT articles'}), 502
 
@@ -90,24 +91,17 @@ def get_articles():
             'snippet': doc.get('snippet', ''),
             'pub_date': doc.get('pub_date', ''),
             'web_url': doc.get('web_url', ''),
-            'image': None,
+            'image': doc.get('multimedia', {}).get('default', '').get('url', ''),
         }
-        # handle images safely
-        for media in doc.get('multimedia', []):
-            # check if media is a dictionary before using get()
-            if isinstance(media, dict) and media.get('subtype') == 'default':
-                article['image'] = 'https://www.nytimes.com/' + media.get('url', '')
-                break
-        articles.append(article)
-
         articles.append(article)
 
     # save articles to MongoDB
-    if articles:
-        articles_collection.insert_many(articles)
-        print(f"Inserting {len(articles)} articles into MongoDB")
-        for art in articles[:3]:
-            print(art)
+    #if articles:
+    #    articles_collection.insert_many(articles)
+    #    print(f"Inserting {len(articles)} articles into MongoDB")
+    #    for art in articles[:3]:
+    #        print(art)
+    
     return jsonify(articles)
 
 # create a new comment
