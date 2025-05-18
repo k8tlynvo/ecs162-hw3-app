@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
     import { fetchArticles } from '../fetchArticles';
+    import './home.css';
   
     let apiKey: string = '';
     let articles: string | any[] = [];
