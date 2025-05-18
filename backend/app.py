@@ -3,10 +3,15 @@ from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
 import requests
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-
+client = MongoClient('mongodb://root:rootpassword@localhost:27017/mydatabase?authSource=admin')
+db = client["mydatabase"]
+articles_collection = db["articles"]
+comments_collection = db["comments"]
 
 oauth = OAuth(app)
 
@@ -53,40 +58,95 @@ def logout():
     session.clear()
     return redirect('/')
 
+@app.route('/api/key')
+def get_key():
+    return jsonify({'apiKey': os.getenv('NYT_API_KEY')})
+
+# get articles from NYT API and store them in MongoDB
 @app.route('/api/articles')
 def get_articles():
-    query = request.args.get('q')
+    query = request.args.get('q', 'davis/sacramento')
     page = request.args.get('page', 0)
     api_key = os.getenv('NYT_API_KEY')
 
-    if not query:
-        return jsonify({'error': 'Missing query parameter'}), 400
-    
-    nyt_url = 'https://api.nytimes.com/svc/search/v2/articlesearch.json'
-    params = {
-        'q': query,
-        'page': page,
-        'api-key': api_key
+    print(f"Query: {query}, Page: {page}")
+
+    nyt_url = "https://api.nytimes.com/svc/search/v2/articlesearch.json"
+    params = { "q": query, "page": page, "api-key": api_key }
+
+    nyt_response = requests.get(nyt_url, params=params)
+    # print("NYT Response Status:", nyt_response.status_code)
+    # print("NYT Response Content:", nyt_response.text)
+    if nyt_response.status_code != 200:
+        return jsonify({'error': 'Failed to fetch NYT articles'}), 502
+
+    data = nyt_response.json()
+    docs = data.get('response', {}).get('docs', [])
+    articles = []
+
+    for doc in docs:
+        article = {
+            'headline': doc.get('headline', {}).get('main', ''),
+            'snippet': doc.get('snippet', ''),
+            'pub_date': doc.get('pub_date', ''),
+            'web_url': doc.get('web_url', ''),
+            'image': None,
+        }
+        # handle images safely
+        for media in doc.get('multimedia', []):
+            # check if media is a dictionary before using get()
+            if isinstance(media, dict) and media.get('subtype') == 'default':
+                article['image'] = 'https://www.nytimes.com/' + media.get('url', '')
+                break
+        articles.append(article)
+
+        articles.append(article)
+
+    # save articles to MongoDB
+    if articles:
+        articles_collection.insert_many(articles)
+        print(f"Inserting {len(articles)} articles into MongoDB")
+        for art in articles[:3]:
+            print(art)
+    return jsonify(articles)
+
+# create a new comment
+@app.route('/comments', methods=['POST'])
+def create_comment():
+    result = comments_collection.insert_one(request.json)
+    comment = {
+        "article_id": ObjectId(data["article_id"]),
+        "parent_id": ObjectId(data["parent_id"]) if data.get("parent_id") else None,
+        "text": request.json("text"),
+        "user": session.get("user"),
+        "created_at": datetime.utcnow(),
     }
-    
-    try:
-        response = requests.get(nyt_url, params=params)
-        response.raise_for_status()
-        data = response.json()
+    return jsonify({"inserted_id": str(result.inserted_id)}), 201
 
-        articles = []
-        for doc in data['response']['docs']:
-            articles.append({
-                'headline': doc['headline']['main'],
-                'url': doc['web_url'],
-                'snippet': doc['snippet'],
-                'published_date': doc['pub_date'],
-                'image': doc['multimedia']['default']['url']
-            })
+# get all comments for a specific article
+@app.route('/articles/<article_id>/comments', methods=['GET'])
+def get_replies():
+    comments = list(comments_collection.find({"article_id": ObjectId(article_id)}, {"parent_id": None}))
+    for comment in comments:
+        comment['_id'] = str(comment['_id'])
+        comment["article_id"] = str(comment["article_id"])
+        if comment.get("parent_id"):
+            comment["parent_id"] = str(comment["parent_id"])
+    return jsonify(comments)
 
-        return jsonify(articles)
-    except Exception as e:
-        return jsonify({'error': 'Failed to fetch articles', 'details': str(e)}), 500
+# get all replies for a specific comment
+@app.route('/comments/<comment_id>/replies', methods=['GET'])
+def get_comments():
+    comments = list(comments_collection.find({"parent_id": ObjectId(comment_id)}))
+    for comment in comments:
+        comment['_id'] = str(comment['_id'])
+    return jsonify(comments)
+
+# edit a comment
+@app.route('/comments/<comment_id>', methods=['PUT'])
+def update_comment():
+    result = comments_collection.update_one({"_id": ObjectId(comment_id)}, {"$set": request.json})
+    return jsonify({"modified_count": result.modified_count})
 
 
 if __name__ == '__main__':
