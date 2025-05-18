@@ -90,15 +90,14 @@ def get_articles():
     docs = data.get('response', {}).get('docs', [])
     articles = []
 
-    for doc in docs:
-        article = {
-            'headline': doc.get('headline', {}).get('main', ''),
-            'snippet': doc.get('snippet', ''),
-            'pub_date': doc.get('pub_date', ''),
-            'web_url': doc.get('web_url', ''),
-            'image': doc.get('multimedia', {}).get('default', '').get('url', ''),
-        }
-        articles.append(article)
+    for doc in data['response']['docs']:
+        articles.append({
+            'headline': doc['headline']['main'],
+            'url': doc['web_url'],
+            'snippet': doc['snippet'],
+            'published_date': doc['pub_date'],
+            'image': doc['multimedia']['default']['url']
+        })
 
     # save articles to MongoDB
     #if articles:

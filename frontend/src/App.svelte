@@ -34,7 +34,7 @@
       if (loading) return;
       loading = true;
       try {
-        const newArticles = await fetchArticles(query, apiKey, page);
+        const newArticles = await fetchArticles(query, page);
         articles = [...articles, ...newArticles];
         page += 1;
       } catch (error) {
