@@ -1,6 +1,11 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
     import { fetchArticles } from './fetchArticles';
+    import AccountPanel from './lib/AccountPanel.svelte';
+    import { initUser, userStore } from './stores/user';
+    import { get } from 'svelte/store';
+
+    type User = { email: string } | null;
   
     let apiKey: string = '';
     let articles: string | any[] = [];
@@ -8,6 +13,7 @@
     let page = 0;
     let loading = false;
     let mainLayoutClass = '';
+    let user: User | null;
   
     const today = new Date();
     const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -48,6 +54,10 @@
     onMount(async () => {
       updateLayout(); // get initial layout class
       window.addEventListener('resize', updateLayout);
+
+      // initialize user session
+      await initUser();
+      user = get(userStore);
       try {
         const res = await fetch('/api/key');
         const data = await res.json();
@@ -75,9 +85,13 @@
         <p id="todaysDate" data-testid="todaysDate">{formattedDate}</p>
         <p>Today's Paper</p>
     </div>
+    {#if user?.email}
+      <AccountPanel {user} />
+    {:else}
     <div class="login-button">
         <a href="http://localhost:8000/login">LOG IN</a>
     </div>
+    {/if}
     <img src="./logo.svg" alt="New York Times logo" id="logo">
 </header>
 <!-- horizontal line dividing header and main section -->

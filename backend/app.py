@@ -27,10 +27,8 @@ oauth.register(
 
 @app.route('/')
 def home():
-    user = session.get('user')
-    if user:
-        return f"<h2>Logged in as {user['email']}</h2><a href='/logout'>Logout</a>"
-    return '<a href="/login">Login with Dex</a>'
+    frontend_port = os.getenv('FRONTEND_PORT')
+    return redirect(f'http://localhost:{frontend_port}')
 
 @app.route('/login')
 def login():
@@ -51,6 +49,13 @@ def authorize():
 def logout():
     session.clear()
     return redirect('/')
+
+@app.route('/api/user')
+def user():
+    user = session.get('user')
+    if user:
+        return jsonify(user)
+    return jsonify({'email': None})
 
 @app.route('/api/key')
 def get_key():
