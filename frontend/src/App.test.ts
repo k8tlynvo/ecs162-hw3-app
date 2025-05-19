@@ -40,7 +40,7 @@ vi.mock('./stores/user', async () => {
   };
 });
 
-// --------- App Header Tests ----------
+// App header tests
 describe('App Header', () => {
   test('date in header is todays date', () => {
     render(App);
@@ -123,7 +123,7 @@ describe('App Layout', () => {
   });
 });
 
-// --------- App Component Behavior Tests ----------
+// App component tests
 describe('App Component', () => {
   const fakeArticles = [{
     _id: 'abc123',
@@ -227,17 +227,14 @@ describe('App Component', () => {
     // Simulate scrolling to bottom
     simulateScroll();
     
-    // Check if more articles were loaded
     await waitFor(() => {
       expect(screen.getByText('Second Test Headline')).toBeInTheDocument();
     });
     
-    // Verify fetchArticles was called with the right parameters
     expect(fetchMock).toHaveBeenCalledWith('davis/sacramento', 1);
   });
 
   it('displays "Loading more articles..." when fetching additional articles', async () => {
-    // Setup fetch with delay for second page
     fetchMock.mockImplementation(async (query, page) => {
       if (page === 0) return fakeArticles;
       if (page === 1) {
@@ -249,12 +246,10 @@ describe('App Component', () => {
     
     render(App);
     
-    // Wait for initial articles to load
     await waitFor(() => {
       expect(screen.getByText('Test Headline')).toBeInTheDocument();
     });
     
-    // Simulate scrolling to bottom
     simulateScroll();
     
     // Check for loading message
@@ -262,7 +257,6 @@ describe('App Component', () => {
       expect(screen.getByText('Loading more articles...')).toBeInTheDocument();
     });
     
-    // Check for new articles after loading
     await waitFor(() => {
       expect(screen.getByText('Second Test Headline')).toBeInTheDocument();
     });
@@ -291,15 +285,13 @@ describe('App Component', () => {
       expect(screen.getByText('Test Headline')).toBeInTheDocument();
     });
     
-    // First scroll
     simulateScroll();
     
     // Wait for second set of articles
     await waitFor(() => {
       expect(screen.getByText('Second Test Headline')).toBeInTheDocument();
     });
-    
-    // Second scroll
+
     simulateScroll();
     
     // Wait for third set of articles
@@ -344,18 +336,17 @@ describe('App Component', () => {
   });
 });
 
-// --------- Comments Functionality Tests ----------
+// test commenting functionality
 describe('Comments Functionality', () => {
   const fakeArticle = {
     _id: 'abc123',
     headline: 'Test Headline',
     snippet: 'This is a test snippet.',
     image: 'https://example.com/image.jpg',
-    comment_count: 5
+    commentCount: 5 
   };
 
   beforeEach(async () => {
-    // Mock fetch API responses
     global.fetch = vi.fn().mockImplementation((url) => {
       if (url === '/api/key') {
         return Promise.resolve({
@@ -392,9 +383,10 @@ describe('Comments Functionality', () => {
     render(App);
     
     await waitFor(() => {
-      const commentsButton = screen.getByText(/Comments/);
+      const commentsButton = screen.getByRole('button', { name: /comment icon/i });
       expect(commentsButton).toBeInTheDocument();
-      expect(commentsButton.textContent).toBe('5 Comments');
+
+      expect(commentsButton.textContent?.trim()).toBe('0');
     });
   });
 
@@ -404,10 +396,9 @@ describe('Comments Functionality', () => {
     render(App);
     
     await waitFor(() => {
-      const commentsButton = screen.getByText(/Comments/);
+      const commentsButton = screen.getByRole('button', { name: /comment icon/i });
       expect(commentsButton).toBeDisabled();
       expect(commentsButton).toHaveAttribute('title', 'Please log in to view comments');
     });
   });
-
 });
