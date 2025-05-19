@@ -142,6 +142,7 @@
 
   // Fetch comments when article ID changes
   $: if (articleId) fetchComments();
+  
 </script>
 
 <aside class="comments-sidebar">
