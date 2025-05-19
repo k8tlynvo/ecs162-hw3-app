@@ -163,16 +163,15 @@
   <div class="comments-list">
     {#each comments as comment}
       <div class="comment">
-        <strong>{comment.user?.email || 'Anonymous'}:</strong>
-        <p>{comment.text}</p>
-        <div style="margin-top: 5px;">
-        <div class="comment-avatar">
-          <div class="avatar"></div>
-        </div>
-        <div class="comment-content">
+        <div class="comment-user">
+          <div class="comment-avatar">
+            <div class="avatar">{comment.user?.email[0]}</div>
+          </div>
           <div class="comment-header">
             <span class="username">{comment.user?.email}</span>
           </div>
+        </div>
+        <div class="comment-content">
           <p class="comment-text">{comment.text}</p>
           <div class="comment-actions">
             {#if user}
@@ -183,6 +182,7 @@
           {/if}
           </div>
         </div>
+      </div>
 
         {#if replyingTo === comment._id}
           <div style="margin-top: 10px;">
@@ -193,8 +193,8 @@
               style="width: 100%;"
             ></textarea>
             <div style="margin-top: 5px;">
-              <button on:click={() => submitReply(comment._id)}>Reply</button>
-              <button on:click={() => { replyingTo = null; replyTextMap[comment._id] = ''; }}>Cancel</button>
+              <button class="reply-btn" on:click={() => submitReply(comment._id)}>Reply</button>
+              <button class="cancel-btn" on:click={() => { replyingTo = null; replyTextMap[comment._id] = ''; }}>Cancel</button>
             </div>
           </div>
         {/if}
@@ -202,17 +202,27 @@
         {#if comment.replies && comment.replies.length > 0}
           <ul style="margin-left: 20px; border-left: 1px solid #ccc; padding-left: 10px; margin-top: 10px;">
             {#each comment.replies as reply}
-              <li style="margin-top: 5px;">
-                <strong>{reply.user?.email || 'Anonymous'}:</strong> {reply.text}
-                {#if userType === "moderator"}
-                  <button on:click={() => deleteComment(reply._id)}>Delete</button>
-                {/if}
-              </li>
+              <div class="comment">
+                <div class="comment-user">
+                  <div class="comment-avatar">
+                    <div class="avatar">{comment.user?.email[0]}</div>
+                  </div>
+                  <div class="comment-header">
+                    <span class="username">{comment.user?.email}</span>
+                  </div>
+                </div>
+                <div class="comment-content">
+                  <p class="comment-text">{reply.text}</p>
+                  <div class="comment-actions">
+                    {#if userType === "moderator"}
+                      <button class="delete-btn" on:click={() => deleteComment(reply._id)}>Delete</button>
+                    {/if}
+                  </div>
+                </div>
+              </div>
             {/each}
           </ul>
         {/if}
-      </div>
-
     {/each}
   </div>
 </aside>
@@ -241,6 +251,12 @@
     align-items: baseline;
     gap: 16px;
     border-bottom: 1px solid #f0f0f0;
+  }
+
+  .comment-user {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
   }
 
   .comments-header h3 {
@@ -287,11 +303,10 @@
     font-weight: 500;
     cursor: pointer;
     padding: 8px 12px;
-    border: solid 1px #666;
-    border-radius: 4px;
+    border: none;
   }
 
-  .submit-btn {
+  .submit-btn, .reply-btn {
     background: #6792b4;
     color: white;
     border: solid 1px #666;
@@ -308,13 +323,12 @@
   }
 
   .comments-list {
-    flex: 1;
     overflow-y: auto;
     padding: 16px;
   }
 
   .comment {
-    display: flex;
+    display: block;
     margin-bottom: 24px;
   }
 
@@ -331,7 +345,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 500;
-    color: #666;
+    color: white;
     text-transform: uppercase;
   }
 
