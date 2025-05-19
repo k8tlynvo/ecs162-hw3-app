@@ -89,7 +89,7 @@
           }
           // Also check replies
           if (comment.replies) {
-            comment.replies = comment.replies.map(reply =>
+            comment.replies = comment.replies.map((reply: any) =>
               reply._id === commentId
                 ? { ...reply, text: 'comment was removed by moderator' }
                 : reply
