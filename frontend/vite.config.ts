@@ -1,9 +1,22 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import sveltePreprocess from 'svelte-preprocess'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  plugins: [svelte()],
+  plugins: [
+    svelte({
+      preprocess: sveltePreprocess(),
+    }),
+  ],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
+  resolve: process.env.VITEST
+    ? {
+      conditions: ['browser']
+    } : undefined,
   server: mode === 'development' ? {
     proxy: {
       '/api': {

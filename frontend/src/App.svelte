@@ -6,6 +6,8 @@
     import { initUser, userStore } from './stores/user';
     import { get } from 'svelte/store';
 
+    console.log('AccountPanel component:', AccountPanel);
+
     type User = { email: string } | null;
   
     let apiKey: string = '';
@@ -115,9 +117,8 @@
           // fetch articles
           await loadArticles();
           window.addEventListener('scroll', handleScroll);
-        }
       } catch (error) {
-        console.error('Failed to fetch API key:', error);
+        console.error('Failed to fetch articles:', error);
       }
     });
   
