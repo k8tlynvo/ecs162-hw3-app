@@ -14,6 +14,8 @@
 
   let comments: any[] = [];
   let newComment = '';
+  let replyTextMap: Record<string, string> = {};
+  let replyingTo: string | null = null;
 
   // Fetch comments from backend
   async function fetchComments() {
@@ -85,6 +87,38 @@
     }
   }
 
+  async function submitReply(commentId: string) {
+    const text = replyTextMap[commentId]?.trim();
+    if (!text) return;
+
+    const payload = {
+      article_id: articleId,
+      parent_id: commentId,
+      text
+    };
+
+    try {
+      const res = await fetch("http://localhost:8000/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        replyTextMap[commentId] = '';
+        await fetchComments(); // Refresh comments
+      } else {
+        alert(`Failed to add reply: ${data.error || JSON.stringify(data)}`);
+      }
+    } catch (err) {
+      console.error('Error submitting reply:', err);
+      alert('Error submitting reply.');
+    }
+  }
+
   // Fetch comments when article ID changes
   $: if (articleId) fetchComments();
 </script>
@@ -113,13 +147,44 @@
       <div class="comment">
         <strong>{comment.user?.email || 'Anonymous'}:</strong>
         <p>{comment.text}</p>
-        <div>
-          <p>Reply</p>
+        <div style="margin-top: 5px;">
+          {#if user}
+            <button on:click={() => replyingTo = comment._id}>Reply</button>
+          {/if}
           {#if userType === "moderator"}
             <button on:click={() => deleteComment(comment._id)}>Delete</button>
           {/if}
         </div>
+
+        {#if replyingTo === comment._id}
+          <div style="margin-top: 10px;">
+            <textarea
+              bind:value={replyTextMap[comment._id]}
+              placeholder="Write your reply..."
+              rows="2"
+              style="width: 100%;"
+            />
+            <div style="margin-top: 5px;">
+              <button on:click={() => submitReply(comment._id)}>Reply</button>
+              <button on:click={() => { replyingTo = null; replyTextMap[comment._id] = ''; }}>Cancel</button>
+            </div>
+          </div>
+        {/if}
+
+        {#if comment.replies && comment.replies.length > 0}
+          <ul style="margin-left: 20px; border-left: 1px solid #ccc; padding-left: 10px; margin-top: 10px;">
+            {#each comment.replies as reply}
+              <li style="margin-top: 5px;">
+                <strong>{reply.user?.email || 'Anonymous'}:</strong> {reply.text}
+                {#if userType === "moderator"}
+                  <button on:click={() => deleteComment(reply._id)}>Delete</button>
+                {/if}
+              </li>
+            {/each}
+          </ul>
+        {/if}
       </div>
+
     {/each}
   </div>
 </aside>
