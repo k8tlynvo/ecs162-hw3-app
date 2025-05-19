@@ -68,7 +68,6 @@
     function openComments(article: any) {
       selectedArticle = article;
       isPanelOpen = !isPanelOpen;
-      console.log(selectedArticle)
     }
 
     function closeComments() {
@@ -189,6 +188,7 @@
         title={selectedArticle.headline}
         user={user}
         userType={userType}
+        totalComments={selectedArticle.comment_count}
         on:close={closeComments}
         on:updateCount={updateCommentCount}
       />
