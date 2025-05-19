@@ -134,6 +134,7 @@ def create_comment():
     result = comments_collection.insert_one(comment)
     return jsonify({"inserted_id": str(result.inserted_id)}), 201
 
+# get all comments for the article as replies
 @app.route('/api/articles/<article_id>/comments', methods=['GET'])
 def get_comments_with_replies(article_id):
     # Get all comments for the article
@@ -153,7 +154,6 @@ def get_comments_with_replies(article_id):
         comment['replies'] = []
         comment_lookup[comment['_id']] = comment
 
-    # Build the hierarchy
     top_level_comments = []
     for comment in comment_lookup.values():
         if comment['parent_id']:
