@@ -64,11 +64,25 @@
   }
 
   // Delete comment (only available for moderators)
-  function deleteComment(commentId: string) {
-    fetch(`/comments/${commentId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
+  async function deleteComment(commentId: string) {
+    try {
+      const res = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        console.log(`Deleted ${result.deleted_count} comments`);
+        await fetchComments(); // Refresh after deletion
+      } else {
+        const error = await res.json();
+        alert(`Failed to delete: ${error.error}`);
+      }
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      alert('Error deleting comment.');
+    }
   }
 
   // Fetch comments when article ID changes
