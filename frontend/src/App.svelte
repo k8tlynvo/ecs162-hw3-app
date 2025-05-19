@@ -5,6 +5,7 @@
     import CommentsPanel from './lib/CommentsPanel.svelte';
     import { initUser, userStore } from './stores/user';
     import { get } from 'svelte/store';
+    let isPanelOpen = false;
 
     console.log('AccountPanel component:', AccountPanel);
     console.log('Comments component:', CommentsPanel);
@@ -24,6 +25,8 @@
     const today = new Date();
     const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const formattedDate = today.toLocaleDateString('en-US', options);
+  
+
   
     function updateLayout() {
       const width = window.innerWidth;
@@ -64,11 +67,13 @@
 
     function openComments(article: any) {
       selectedArticle = article;
+      isPanelOpen = !isPanelOpen;
       console.log(selectedArticle)
     }
 
     function closeComments() {
       selectedArticle = null;
+      isPanelOpen = false;
     }
 
 
@@ -189,3 +194,7 @@
       />
     {/if}
 </main>
+
+{#if isPanelOpen}
+    <button class="overlay" aria-label="overlay"></button>
+{/if}

@@ -5,7 +5,7 @@
   export let title: string;
   export let user: { email: string } | null;
   export let userType: string;
-
+    
   const dispatch = createEventDispatcher();
 
   function handleClose() {
@@ -141,6 +141,7 @@
 
   // Fetch comments when article ID changes
   $: if (articleId) fetchComments();
+  
 </script>
 
 <aside class="comments-sidebar">
