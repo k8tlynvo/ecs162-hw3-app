@@ -134,57 +134,6 @@ def create_comment():
     result = comments_collection.insert_one(comment)
     return jsonify({"inserted_id": str(result.inserted_id)}), 201
 
-# TODO: not tested
-# get all comments for a specific article
-@app.route('/articles/<article_id>/comments', methods=['GET'])
-def get_replies():
-    comments = list(comments_collection.find({"article_id": ObjectId(article_id)}, {"parent_id": None}))
-    for comment in comments:
-        comment['_id'] = str(comment['_id'])
-        comment["article_id"] = str(comment["article_id"])
-        if comment.get("parent_id"):
-            comment["parent_id"] = str(comment["parent_id"])
-    return jsonify(comments)
-
-# TODO: not tested
-# get all replies for a specific comment
-@app.route('/comments/<comment_id>/replies', methods=['GET'])
-def get_comments():
-    comments = list(comments_collection.find({"parent_id": ObjectId(comment_id)}))
-    for comment in comments:
-        comment['_id'] = str(comment['_id'])
-    return jsonify(comments)
-
-# This endpoint returns a list of top-level comments for a given article,
-# each with its direct replies nested inside a "replies" field.
-
-# The response is a list of dictionaries where each dictionary represents a top-level comment:
-# [
-#     {
-#         "_id": str,                 # Unique string ID of the comment (Mongo ObjectId)
-#         "article_id": str,          # The ID of the article this comment belongs to
-#         "parent_id": None,          # Always None for top-level comments
-#         "text": str,                # The content of the comment
-#         "user": {                   # Information about the user who posted the comment
-#             "email": str,           # Email of the user (if available from session)
-#             ...                     # (other user fields depending on your session)
-#         },
-#         "created_at": str,          # Timestamp of when the comment was created (in UTC ISO format)
-#         "replies": [                # A list of reply comment objects (1 level deep)
-#             {
-#                 "_id": str,             # Unique ID of the reply comment
-#                 "article_id": str,      # Same article ID as the parent
-#                 "parent_id": str,       # ID of the parent comment
-#                 "text": str,            # Reply content
-#                 "user": {...},          # User info for the reply
-#                 "created_at": str,      # When the reply was posted
-#                 "replies": []           # Empty list (only one level of nesting supported here)
-#             },
-#             ...
-#         ]
-#     },
-#     ...
-# ]
 @app.route('/api/articles/<article_id>/comments', methods=['GET'])
 def get_comments_with_replies(article_id):
     # Get all comments for the article
@@ -215,13 +164,6 @@ def get_comments_with_replies(article_id):
             top_level_comments.append(comment)
 
     return jsonify(top_level_comments)
-
-# TODO: not tested, for extra credit 
-# edit a comment 
-@app.route('/api/comments/<comment_id>', methods=['PUT'])
-def update_comment(comment_id):
-    result = comments_collection.update_one({"_id": ObjectId(comment_id)}, {"$set": request.json})
-    return jsonify({"modified_count": result.modified_count})
 
 # delete comment 
 @app.route('/api/comments/<comment_id>', methods=['DELETE'])
