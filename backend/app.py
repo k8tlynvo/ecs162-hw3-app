@@ -99,13 +99,19 @@ def get_articles():
             'published_date': doc['pub_date'],
             'image': doc['multimedia']['default']['url']
         }
-        articles.append(article)
-        # save articles to mongo using upsert to avoid duplicates by URL
+
+        # Upsert the article into MongoDB
         articles_collection.update_one(
             {'url': article['url']},
             {'$set': article},
             upsert=True
         )
+
+        # Retrieve the inserted or matched article with its _id
+        stored_article = articles_collection.find_one({'url': article['url']})
+        article['_id'] = str(stored_article['_id'])  # Mongo _id as string
+
+        articles.append(article)
     
     return jsonify(articles)
 

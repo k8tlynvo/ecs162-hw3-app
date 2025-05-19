@@ -7,6 +7,7 @@
     import { get } from 'svelte/store';
 
     console.log('AccountPanel component:', AccountPanel);
+    console.log('Comments component:', CommentsPanel);
 
     type User = { email: string } | null;
   
@@ -63,6 +64,7 @@
 
     function openComments(article: any) {
       selectedArticle = article;
+      console.log(selectedArticle)
     }
 
     function closeComments() {
@@ -95,32 +97,33 @@
     articles = articles.map((article, index) => ({ ...article, commentCount: counts[index] }));
   }
   
-    onMount(async () => {
-      updateLayout(); // get initial layout class
-      window.addEventListener('resize', updateLayout);
+  onMount(async () => {
+    updateLayout(); // get initial layout class
+    window.addEventListener('resize', updateLayout);
 
-      // initialize user session
-      await initUser();
-      user = get(userStore);
-      if (!user) {
-        userType = 'guest';
+    // initialize user session
+    await initUser();
+    user = get(userStore);
+    if (!user) {
+      userType = 'guest';
+    }
+    else {
+      userType = user.email === 'user@hw3.com' ? 'user' : 'moderator';
+    }
+    try {
+      const res = await fetch('/api/key');
+      const data = await res.json();
+      apiKey = data.apiKey;
+
+      if (apiKey) {
+        // fetch articles
+        await loadArticles();
+        window.addEventListener('scroll', handleScroll);
       }
-      else {
-        userType = user.email === 'user@hw3.com' ? 'user' : 'moderator';
-      }
-      try {
-        const res = await fetch('/api/key');
-        const data = await res.json();
-        apiKey = data.apiKey;
-  
-        if (apiKey) {
-          // fetch articles
-          await loadArticles();
-          window.addEventListener('scroll', handleScroll);
-      } catch (error) {
-        console.error('Failed to fetch articles:', error);
-      }
-    });
+    } catch (error) {
+      console.error('Failed to fetch API key:', error);
+    }
+  });
   
     onDestroy(() => {
       window.removeEventListener('resize', updateLayout);
@@ -172,7 +175,7 @@
     <!-- Comments panel -->
     {#if selectedArticle}
       <CommentsPanel
-        articleId={selectedArticle._id}
+        articleId={selectedArticle._id.toString()}
         title={selectedArticle.headline}
         user={user}
         userType={userType}
