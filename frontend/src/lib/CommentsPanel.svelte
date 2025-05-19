@@ -76,7 +76,23 @@
       if (res.ok) {
         const result = await res.json();
         console.log(`Deleted ${result.deleted_count} comments`);
-        await fetchComments(); // Refresh after deletion
+
+        // Update the comment in-place
+        comments = comments.map(comment => {
+          if (comment._id === commentId) {
+            return { ...comment, text: 'comment was removed by moderator' };
+          }
+          // Also check replies
+          if (comment.replies) {
+            comment.replies = comment.replies.map(reply =>
+              reply._id === commentId
+                ? { ...reply, text: 'comment was removed by moderator' }
+                : reply
+            );
+          }
+          return comment;
+        });
+
       } else {
         const error = await res.json();
         alert(`Failed to delete: ${error.error}`);
@@ -147,14 +163,16 @@
       <div class="comment">
         <strong>{comment.user?.email || 'Anonymous'}:</strong>
         <p>{comment.text}</p>
-        <div style="margin-top: 5px;">
-          {#if user}
-            <button on:click={() => replyingTo = comment._id}>Reply</button>
-          {/if}
-          {#if userType === "moderator"}
-            <button on:click={() => deleteComment(comment._id)}>Delete</button>
-          {/if}
-        </div>
+        {#if comment.text !== 'comment was removed by moderator'}
+          <div style="margin-top: 5px;">
+            {#if user}
+              <button on:click={() => replyingTo = comment._id}>Reply</button>
+            {/if}
+            {#if userType === "moderator"}
+              <button on:click={() => deleteComment(comment._id)}>Delete</button>
+            {/if}
+          </div>
+        {/if}
 
         {#if replyingTo === comment._id}
           <div style="margin-top: 10px;">
@@ -175,11 +193,11 @@
           <ul style="margin-left: 20px; border-left: 1px solid #ccc; padding-left: 10px; margin-top: 10px;">
             {#each comment.replies as reply}
               <li style="margin-top: 5px;">
-                <strong>{reply.user?.email || 'Anonymous'}:</strong> {reply.text}
-                {#if userType === "moderator"}
-                  <button on:click={() => deleteComment(reply._id)}>Delete</button>
-                {/if}
-              </li>
+              <strong>{reply.user?.email || 'Anonymous'}:</strong> {reply.text}
+              {#if reply.text !== 'comment was removed by moderator' && userType === 'moderator'}
+                <button on:click={() => deleteComment(reply._id)}>Delete</button>
+              {/if}
+            </li>
             {/each}
           </ul>
         {/if}
