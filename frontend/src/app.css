@@ -122,6 +122,22 @@
       background-color: #5a6a7e;
   }
 
+  .comment-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    border: solid 1px #ababab;
+    background-color: white;
+    padding: 3px 10px;
+  }
+
+  .comment-btn img {
+    width: 1.8rem;
+    margin-right: 5px;
+    border-radius: 20px;
+  }
+
   /* Tablet view: show two columns when screen width is between 768px and 1024px */
   @media only screen and (min-width: 768px) {
 

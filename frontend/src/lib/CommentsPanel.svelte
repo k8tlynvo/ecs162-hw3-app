@@ -240,6 +240,7 @@
             {/each}
           </ul>
         {/if}
+      </div>
     {/each}
   </div>
 </aside>

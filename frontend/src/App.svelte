@@ -162,12 +162,13 @@
                 {/if}
                 <h2 class="title">{article.headline}</h2>
                 <p class="description">{article.snippet}</p>
-                <button 
+                <button class="comment-btn"
                   on:click={() => openComments(article)}
                   disabled={!user?.email}
                   title={!user?.email ? "Please log in to view comments" : ""}
                 >
-                  💬 {article.comment_count ?? 0} Comments
+                  <img src="/comment_icon.png" alt="comment icon" class="comment-icon" />
+                  {article.comment_count ?? 0}
                 </button>
             </article>
         </div>
