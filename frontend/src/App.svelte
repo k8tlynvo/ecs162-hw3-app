@@ -184,6 +184,7 @@
         title={selectedArticle.headline}
         user={user}
         userType={userType}
+        totalComments={selectedArticle.comment_count}
         on:close={closeComments}
         on:updateCount={updateCommentCount}
       />

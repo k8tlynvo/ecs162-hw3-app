@@ -5,6 +5,7 @@
   export let title: string;
   export let user: { email: string } | null;
   export let userType: string;
+  export let totalComments: number;
 
   const dispatch = createEventDispatcher();
 
@@ -156,14 +157,14 @@
   <div>
     <div class="comments-header">
       <h1>Comments</h1>
-      <h3>{comments.length}</h3>
+      <h3>{totalComments}</h3>
     </div>
 
     {#if user}
       <div class="comment-form">
         <textarea 
           bind:value={newComment} 
-          placeholder="Share your thoughts..."
+          placeholder="Share your thoughts."
           rows="3"
         ></textarea>
         <div class="form-actions">
@@ -249,7 +250,16 @@
   .panel-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 8px;
   }
+  .panel-header h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1; 
+}
+
   .comments-sidebar {
     position: fixed;
     right: 0;
@@ -262,13 +272,13 @@
     overflow-y: auto;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    font-family: Arial, Helvetica, sans-serif;
   }
 
   .comments-header{
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 16px;
-    border-bottom: 1px solid #f0f0f0;
   }
 
   .comment-user {
@@ -278,7 +288,6 @@
   }
 
   .comments-header h3 {
-    border-bottom: 1px solid #e0e0e0;
     color: #333333;
   }
 
