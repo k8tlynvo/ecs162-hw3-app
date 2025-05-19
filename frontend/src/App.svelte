@@ -7,7 +7,6 @@
 
     type User = { email: string } | null;
   
-    let apiKey: string = '';
     let articles: string | any[] = [];
     let query = 'davis/sacramento';
     let page = 0;
