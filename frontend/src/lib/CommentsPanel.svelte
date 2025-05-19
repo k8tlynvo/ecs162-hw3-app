@@ -18,11 +18,13 @@
   // Fetch comments from backend
   async function fetchComments() {
     try {
-      const res = await fetch(`http://localhost:8000/articles/comments/${articleId}`, {
+      const res = await fetch(`http://localhost:8000/api/articles/${articleId}/comments`, {
         credentials: 'include',
       });
       if (res.ok) {
         comments = await res.json();
+      } else {
+        console.error('Failed to fetch comments:', await res.text());
       }
     } catch (err) {
       console.error('Error fetching comments:', err);
