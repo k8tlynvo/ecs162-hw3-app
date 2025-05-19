@@ -163,7 +163,7 @@
               placeholder="Write your reply..."
               rows="2"
               style="width: 100%;"
-            />
+            ></textarea>
             <div style="margin-top: 5px;">
               <button on:click={() => submitReply(comment._id)}>Reply</button>
               <button on:click={() => { replyingTo = null; replyTextMap[comment._id] = ''; }}>Cancel</button>
