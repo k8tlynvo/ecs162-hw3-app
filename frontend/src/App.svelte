@@ -68,7 +68,6 @@
     function openComments(article: any) {
       selectedArticle = article;
       isPanelOpen = !isPanelOpen;
-      console.log(selectedArticle)
     }
 
     function closeComments() {
