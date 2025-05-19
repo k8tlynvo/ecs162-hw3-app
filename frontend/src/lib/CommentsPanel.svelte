@@ -12,6 +12,10 @@
     dispatch('close');
   }
 
+  function handleCancel() {
+    newComment = '';
+  }
+
   let comments: any[] = [];
   let newComment = '';
 
@@ -77,18 +81,32 @@
 
 <aside class="comments-sidebar">
   <header>
-    <h3>{title}</h3>
-    <button class="close-btn" on:click={handleClose}>✕</button>
+    <div class="panel-header">
+      <h3>{title}</h3>
+      <button class="close-btn" on:click={handleClose}>✕</button>
+    </div>
+
     <hr>
   </header>
 
   <div>
-    <h1>Comments for Article ID: {articleId}</h1>
-    <p>Total: {comments.length}</p>
+    <div class="comments-header">
+      <h1>Comments</h1>
+      <h3>{comments.length}</h3>
+    </div>
 
     {#if user}
-      <textarea bind:value={newComment} placeholder="Share your thoughts..."></textarea>
-      <button on:click={submitComment}>Submit</button>
+      <div class="comment-form">
+        <textarea 
+          bind:value={newComment} 
+          placeholder="Share your thoughts..."
+          rows="3"
+        ></textarea>
+        <div class="form-actions">
+          <button class="cancel-btn" on:click={handleCancel}>CANCEL</button>
+          <button class="submit-btn" on:click={submitComment}>SUBMIT</button>
+        </div>
+      </div>
     {:else}
       <p>Please log in to comment.</p>
     {/if}
@@ -97,13 +115,20 @@
   <div class="comments-list">
     {#each comments as comment}
       <div class="comment">
-        <strong>{comment.user?.email || 'Anonymous'}:</strong>
-        <p>{comment.text}</p>
-        <div>
-          <p>Reply</p>
-          {#if userType === "moderator"}
-            <button on:click={() => deleteComment(comment._id)}>Delete</button>
-          {/if}
+        <div class="comment-avatar">
+          <div class="avatar"></div>
+        </div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="username">{comment.user?.email}</span>
+          </div>
+          <p class="comment-text">{comment.text}</p>
+          <div class="comment-actions">
+            <button class="reply-btn">Reply</button>
+            {#if userType === "moderator"}
+              <button class="delete-btn" on:click={() => deleteComment(comment._id)}>Delete</button>
+            {/if}
+          </div>
         </div>
       </div>
     {/each}
@@ -111,6 +136,10 @@
 </aside>
 
 <style>
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+  }
   .comments-sidebar {
     position: fixed;
     right: 0;
@@ -124,20 +153,140 @@
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
   }
-  .close-btn {
-    float: right;
+
+  .comments-header{
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    border-bottom: 1px solid #f0f0f0;
   }
+
+  .comments-header h3 {
+    border-bottom: 1px solid #e0e0e0;
+    color: #333333;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    margin: 0;
+  }
+
+  .comment-form {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
   textarea {
     width: 100%;
     height: 4em;
     margin-top: 1em;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 14px;
+    margin-bottom: 8px;
   }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .cancel-btn {
+    background: none;
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 12px;
+    border: solid 1px #666;
+    border-radius: 4px;
+  }
+
+  .submit-btn {
+    background: #6792b4;
+    color: white;
+    border: solid 1px #666;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+
+  .submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
   .comments-list {
-    margin-top: 1em;
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
   }
+
   .comment {
-    border-top: 1px solid #eee;
-    padding-top: 0.5em;
-    margin-top: 0.5em;
+    display: flex;
+    margin-bottom: 24px;
+  }
+
+  .comment-avatar {
+    margin-right: 12px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: #666;
+    text-transform: uppercase;
+  }
+
+  .comment-content {
+    flex: 1;
+  }
+
+  .comment-header {
+    margin-bottom: 4px;
+  }
+
+  .username {
+    font-weight: 800;
+    font-size: 14px;
+  }
+
+  .comment-text {
+    margin: 0 0 8px 0;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  .comment-actions {
+    display: flex;
+    gap: 16px;
+  }
+
+  .reply-btn, .delete-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .reply-btn {
+    color: #6792b4;
   }
 </style>

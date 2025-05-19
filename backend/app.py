@@ -21,7 +21,6 @@ comments_collection = db["comments"]
 
 oauth = OAuth(app)
 
-nonce = generate_token()
 
 
 oauth.register(
@@ -43,6 +42,7 @@ def home():
 
 @app.route('/login')
 def login():
+    nonce = generate_token()
     session['nonce'] = nonce
     redirect_uri = 'http://localhost:8000/authorize'
     return oauth.flask_app.authorize_redirect(redirect_uri, nonce=nonce)
