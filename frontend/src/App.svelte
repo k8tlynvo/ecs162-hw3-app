@@ -5,6 +5,8 @@
     import { initUser, userStore } from './stores/user';
     import { get } from 'svelte/store';
 
+    console.log('AccountPanel component:', AccountPanel);
+
     type User = { email: string } | null;
   
     let articles: string | any[] = [];
@@ -58,8 +60,9 @@
       await initUser();
       user = get(userStore);
       try {
-        await loadArticles();
-        window.addEventListener('scroll', handleScroll);
+        // fetch articles
+          await loadArticles();
+          window.addEventListener('scroll', handleScroll);
       } catch (error) {
         console.error('Failed to fetch articles:', error);
       }
