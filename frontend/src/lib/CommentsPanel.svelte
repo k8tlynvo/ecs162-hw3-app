@@ -18,6 +18,8 @@
 
   let comments: any[] = [];
   let newComment = '';
+  let replyTextMap: Record<string, string> = {};
+  let replyingTo: string | null = null;
 
   // Fetch comments from backend
   async function fetchComments() {
@@ -68,11 +70,57 @@
   }
 
   // Delete comment (only available for moderators)
-  function deleteComment(commentId: string) {
-    fetch(`/comments/${commentId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
+  async function deleteComment(commentId: string) {
+    try {
+      const res = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        console.log(`Deleted ${result.deleted_count} comments`);
+        await fetchComments(); // Refresh after deletion
+      } else {
+        const error = await res.json();
+        alert(`Failed to delete: ${error.error}`);
+      }
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      alert('Error deleting comment.');
+    }
+  }
+
+  async function submitReply(commentId: string) {
+    const text = replyTextMap[commentId]?.trim();
+    if (!text) return;
+
+    const payload = {
+      article_id: articleId,
+      parent_id: commentId,
+      text
+    };
+
+    try {
+      const res = await fetch("http://localhost:8000/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        replyTextMap[commentId] = '';
+        await fetchComments(); // Refresh comments
+      } else {
+        alert(`Failed to add reply: ${data.error || JSON.stringify(data)}`);
+      }
+    } catch (err) {
+      console.error('Error submitting reply:', err);
+      alert('Error submitting reply.');
+    }
   }
 
   // Fetch comments when article ID changes
@@ -115,6 +163,9 @@
   <div class="comments-list">
     {#each comments as comment}
       <div class="comment">
+        <strong>{comment.user?.email || 'Anonymous'}:</strong>
+        <p>{comment.text}</p>
+        <div style="margin-top: 5px;">
         <div class="comment-avatar">
           <div class="avatar"></div>
         </div>
@@ -124,13 +175,44 @@
           </div>
           <p class="comment-text">{comment.text}</p>
           <div class="comment-actions">
-            <button class="reply-btn">Reply</button>
-            {#if userType === "moderator"}
-              <button class="delete-btn" on:click={() => deleteComment(comment._id)}>Delete</button>
-            {/if}
+            {#if user}
+            <button class="reply-btn" on:click={() => replyingTo = comment._id}>Reply</button>
+          {/if}
+          {#if userType === "moderator"}
+            <button class="delete-btn" on:click={() => deleteComment(comment._id)}>Delete</button>
+          {/if}
           </div>
         </div>
+
+        {#if replyingTo === comment._id}
+          <div style="margin-top: 10px;">
+            <textarea
+              bind:value={replyTextMap[comment._id]}
+              placeholder="Write your reply..."
+              rows="2"
+              style="width: 100%;"
+            ></textarea>
+            <div style="margin-top: 5px;">
+              <button on:click={() => submitReply(comment._id)}>Reply</button>
+              <button on:click={() => { replyingTo = null; replyTextMap[comment._id] = ''; }}>Cancel</button>
+            </div>
+          </div>
+        {/if}
+
+        {#if comment.replies && comment.replies.length > 0}
+          <ul style="margin-left: 20px; border-left: 1px solid #ccc; padding-left: 10px; margin-top: 10px;">
+            {#each comment.replies as reply}
+              <li style="margin-top: 5px;">
+                <strong>{reply.user?.email || 'Anonymous'}:</strong> {reply.text}
+                {#if userType === "moderator"}
+                  <button on:click={() => deleteComment(reply._id)}>Delete</button>
+                {/if}
+              </li>
+            {/each}
+          </ul>
+        {/if}
       </div>
+
     {/each}
   </div>
 </aside>

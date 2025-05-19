@@ -109,7 +109,12 @@ def get_articles():
 
         # Retrieve the inserted or matched article with its _id
         stored_article = articles_collection.find_one({'url': article['url']})
-        article['_id'] = str(stored_article['_id'])  # Mongo _id as string
+        article_id = stored_article['_id']
+        article['_id'] = str(article_id)  # Mongo _id as string
+
+        # Count comments for this article
+        comment_count = comments_collection.count_documents({'article_id': article_id})
+        article['comment_count'] = comment_count
 
         articles.append(article)
     
