@@ -160,7 +160,7 @@
     {:else}
         {#each articles as article}
         <div class="articles-wrapper">
-            <article>
+            <article class="nyt-article">
                 <!-- each article has a title & description (and an optional image) -->
                 {#if article.image}
                 <img src={article.image} alt={article.headline} width="300" />

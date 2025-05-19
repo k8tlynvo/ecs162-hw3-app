@@ -122,7 +122,15 @@
       background-color: #5a6a7e;
   }
 
+  .nyt-article {
+    position: relative;
+    padding-bottom: 40px;
+  }
+
   .comment-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -130,6 +138,7 @@
     border: solid 1px #ababab;
     background-color: white;
     padding: 3px 10px;
+    cursor: pointer;
   }
 
   .comment-btn img {
